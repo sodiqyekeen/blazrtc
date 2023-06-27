@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazRTC", "src\BlazRTC\BlazRTC.csproj", "{A97FBC9F-463D-4F2F-BCAB-87D03CD4FE81}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazRTC.Sample.Pwa", "samples\BlazRTC.Sample.Pwa\BlazRTC.Sample.Pwa.csproj", "{1E2214E9-86E8-4946-9C3E-59760617431B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A97FBC9F-463D-4F2F-BCAB-87D03CD4FE81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A97FBC9F-463D-4F2F-BCAB-87D03CD4FE81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A97FBC9F-463D-4F2F-BCAB-87D03CD4FE81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A97FBC9F-463D-4F2F-BCAB-87D03CD4FE81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E2214E9-86E8-4946-9C3E-59760617431B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E2214E9-86E8-4946-9C3E-59760617431B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E2214E9-86E8-4946-9C3E-59760617431B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E2214E9-86E8-4946-9C3E-59760617431B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {82AB3D3F-EC8E-47C4-8612-E3A86C3E45EC}
+	EndGlobalSection
+EndGlobal
