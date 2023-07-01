@@ -9,13 +9,8 @@ internal class BlazRTCService : IBlazRTCService
     {
         _blazRTCInterop = blazRTCInterop;
     }
-    public List<MediaDevice> MediaDevices { get; } = new();
+    public List<MediaDeviceInfo> MediaDevices { get; } = new();
 
-
-    public async Task<List<MediaDevice>> GetMediaDevicesAsync()
-    {
-        return await _blazRTCInterop.GetMediaDevicesAsync();
-    }
 
 
 }

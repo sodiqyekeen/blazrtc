@@ -2,5 +2,5 @@
 
 internal interface IBlazRTCInterop
 {
-    Task<List<MediaDevice>> GetMediaDevicesAsync();
+    Task<List<MediaDeviceInfo>> GetConnectedDevicesAsync();
 }

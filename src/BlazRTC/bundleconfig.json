@@ -1,0 +1,15 @@
+[
+  {
+    "outputFileName": "wwwroot/blazRTC.js",
+    "inputFiles": [
+      "wwwroot/js/blazMediaDevice.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true,
+      "collapseWhitespace": true,
+      "removeComments": true
+    },
+    "sourceMap": false
+  }
+]

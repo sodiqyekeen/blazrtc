@@ -1,6 +1,6 @@
 ﻿@page "/"
 
-@inject IBlazRTCService BlazRTCService
+@inject IMediaDeviceService MediaDeviceService
 
 <PageTitle>Index</PageTitle>
 
@@ -10,15 +10,16 @@ Welcome to your new app.
 
 @foreach (var device in devices)
 {
-    <div>@device.Label</div>
+    <div>@device.Label : @device.Kind</div>
 }
 
+
 @code {
-    List<MediaDevice> devices = new List<MediaDevice>();
+    List<MediaDeviceInfo> devices = new List<MediaDeviceInfo>();
 
     protected override async Task OnInitializedAsync()
     {
-        devices = await BlazRTCService.GetMediaDevicesAsync();
+        devices = (await MediaDeviceService.GetMediaDevicesAsync()).ToList();
     }
 
 }

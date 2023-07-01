@@ -99,3 +99,33 @@ a, .btn-link {
     .loading-progress-text:after {
         content: var(--blazor-load-percentage-text, "Loading");
     }
+
+.filter-none {
+    -webkit-filter: none;
+    filter: none;
+}
+
+.filter-blur {
+    -webkit-filter: blur(3px);
+    filter: blur(3px);
+}
+
+.filter-grayscale {
+    -webkit-filter: grayscale(1);
+    filter: grayscale(1);
+}
+
+.filter-invert {
+    -webkit-filter: invert(1);
+    filter: invert(1);
+}
+
+.filter-sepia {
+    -webkit-filter: sepia(1);
+    filter: sepia(1);
+}
+
+#localVideo {
+    object-fit: cover;
+    transform: scaleX(-1);
+}

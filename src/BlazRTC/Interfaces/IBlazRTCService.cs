@@ -19,7 +19,7 @@ public interface IBlazRTCService
     //Task CreateAnswerAsync();
     //Task CreateDataChannelAysnc();
     //Task CreateOfferAsync();
-    Task<List<MediaDevice>> GetMediaDevicesAsync();
+    //Task<List<MediaDeviceInfo>> GetMediaDevicesAsync();
     //Task RemoveTrackAsync();
     //Task SetLocalDescriptionAsync();
     //Task SetRemoteDescriptionAsync();

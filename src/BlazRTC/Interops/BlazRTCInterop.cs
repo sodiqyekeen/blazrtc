@@ -10,10 +10,10 @@ internal class BlazRTCInterop : IBlazRTCInterop, IAsyncDisposable
         rtcModuleTask = new(() => jSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/BlazRTC/BlazRTC.js").AsTask());
     }
 
-    public async Task<List<MediaDevice>> GetMediaDevicesAsync()
+    public async Task<List<MediaDeviceInfo>> GetConnectedDevicesAsync()
     {
         var module = await rtcModuleTask.Value;
-        var response = await module.InvokeAsync<InteropResponse<List<MediaDevice>>>("getMediaDevices");
+        var response = await module.InvokeAsync<InteropResponse<List<MediaDeviceInfo>>>("getConnectedDevices");
         return response.Succeeded ? response.Data! : throw new InteropException(response.Error!);
     }
 

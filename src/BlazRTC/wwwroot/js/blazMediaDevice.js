@@ -1,4 +1,4 @@
-class BlazMediaDevice {
+﻿class BlazMediaDevice {
     async getConnectedDevices() {
         const devices = await navigator.mediaDevices.enumerateDevices();
         const connectedDevices = devices
