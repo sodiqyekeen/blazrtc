@@ -1,9 +1,11 @@
 class BlazMediaDevice {
     async getConnectedDevices() {
+        await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
         const devices = await navigator.mediaDevices.enumerateDevices();
         const connectedDevices = devices
             .filter(device => device.kind !== "other")
             .map(device => {
+                console.log("device", device);
                 return {
                     deviceId: device.deviceId || "",
                     kind: device.kind || "",

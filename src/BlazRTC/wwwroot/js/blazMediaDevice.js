@@ -1,5 +1,14 @@
 ﻿class BlazMediaDevice {
+    async ensureMediaPermissions() {
+        const hasCameraPermission = await navigator.permissions.query({ name: 'camera' });
+        const hasMicrophonePermission = await navigator.permissions.query({ name: 'microphone' });
+
+        if (hasCameraPermission.state !== 'granted' || hasMicrophonePermission.state !== 'granted') {
+            await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+        }
+    }
     async getConnectedDevices() {
+        await this.ensureMediaPermissions();
         const devices = await navigator.mediaDevices.enumerateDevices();
         const connectedDevices = devices
             .filter(device => device.kind !== "other")
