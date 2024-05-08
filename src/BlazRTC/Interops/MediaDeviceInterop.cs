@@ -3,11 +3,19 @@ using Microsoft.JSInterop;
 
 namespace BlazRTC.Interops;
 
-internal class MediaDeviceInterop(IJSRuntime jSRuntime) : IMediaDeviceService, IDisposable
+internal class MediaDeviceInterop : IMediaDeviceService, IDisposable
 {
-    private DotNetObjectReference<MediaDeviceInterop>? _dotNetObjectReference;
+    private DotNetObjectReference<MediaDeviceInterop> _dotNetObjectReference;
     private EventHandler<MediaDeviceChangeEventArgs>? _onDeviceChange;
-    private string? localStreamElementId;
+    private readonly string? _localStreamElementId;
+    private readonly IJSRuntime _jSRuntime;
+
+    public MediaDeviceInterop(IJSRuntime jSRuntime)
+    {
+        _dotNetObjectReference = DotNetObjectReference.Create(this);
+        _jSRuntime = jSRuntime;
+    }
+
 
     public event Action? OnVideoStreamAvailable;
 
@@ -21,8 +29,7 @@ internal class MediaDeviceInterop(IJSRuntime jSRuntime) : IMediaDeviceService, I
     {
         if (_onDeviceChange is null)
         {
-            _dotNetObjectReference = DotNetObjectReference.Create(this);
-            await jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.listenForDeviceChanges", _dotNetObjectReference);
+            await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.listenForDeviceChanges", _dotNetObjectReference);
         }
         _onDeviceChange += eventHandler;
     }
@@ -31,29 +38,34 @@ internal class MediaDeviceInterop(IJSRuntime jSRuntime) : IMediaDeviceService, I
     {
         _onDeviceChange -= eventHandler;
         if (_onDeviceChange is null)
-            await jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.cancelDeviceChangeListener");
+            await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.cancelDeviceChangeListener");
     }
 
     public async Task<IEnumerable<MediaDeviceInfo>> GetMediaDevicesAsync()
     {
-        var mediaDevices = await jSRuntime.InvokeAsyncWithErrorHandling<MediaDeviceInfo[]>("blazMediaDevice.getConnectedDevices");
+        var mediaDevices = await _jSRuntime.InvokeAsyncWithErrorHandling<MediaDeviceInfo[]>("blazMediaDevice.getConnectedDevices");
         if (mediaDevices is null or { Length: 0 })
             return [];
-        //Todo: Handle situations where id and label are empty.
         return mediaDevices;
     }
-    public async Task<bool> StartCameraAsync(MediaOptions options)
+    public async Task<bool> StartCameraAsync(MediaCaptureOptions options)
     {
-        var succeeded = await jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.getMediaStream", options);
+        var succeeded = await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.getMediaStream", options);
         if (succeeded)
         {
-            localStreamElementId = options.PreviewStreamIn;
+            // localStreamElementId = options.PreviewStreamIn;
             NotifyVideoStreamAvailable();
         }
 
         return succeeded;
     }
 
+
+    public async Task StartCaptureAsync(MediaCaptureOptions options)
+    {
+        var constraints = BuildMediaConstraints(options);
+        await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.getMediaStream", constraints, options.PreviewStreamIn);
+    }
 
     public void Dispose()
     {
@@ -62,9 +74,82 @@ internal class MediaDeviceInterop(IJSRuntime jSRuntime) : IMediaDeviceService, I
 
     public async Task StopCameraAsync()
     {
-        if (localStreamElementId is null) return;
-        await jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.stopMediaStream", localStreamElementId);
+        if (_localStreamElementId is null) return;
+        await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.stopMediaStream", _localStreamElementId);
     }
 
     private void NotifyVideoStreamAvailable() => OnVideoStreamAvailable?.Invoke();
+
+
+    private static Dictionary<string, object> BuildMediaConstraints(MediaCaptureOptions options)
+    {
+        var constraints = new Dictionary<string, object>
+        {
+            ["audio"] = options.AudioEnabled,
+            ["video"] = options.VideoEnabled ? BuildVideoConstraints(options) : false
+        };
+
+        if (options.AudioDeviceId is not null)
+        {
+            constraints["audio"] = new Dictionary<string, object>
+            {
+                ["deviceId"] = options.AudioDeviceId
+            };
+        }
+        return constraints;
+    }
+
+    private static Dictionary<string, object> BuildVideoConstraints(MediaCaptureOptions options)
+    {
+        var constraints = new Dictionary<string, object>();
+
+        if (options.VideoWidth > 0)
+        {
+            constraints["width"] = new Dictionary<string, object>
+            {
+                ["ideal"] = options.VideoWidth
+            };
+        }
+
+        if (options.VideoHeight > 0)
+        {
+            constraints["height"] = new Dictionary<string, object>
+            {
+                ["ideal"] = options.VideoHeight
+            };
+        }
+
+        if (options.FrameRate > 0)
+        {
+            constraints["frameRate"] = new Dictionary<string, object>
+            {
+                ["ideal"] = options.FrameRate
+            };
+        }
+
+        if (options.AspectRatio > 0)
+        {
+            constraints["aspectRatio"] = new Dictionary<string, object>
+            {
+                ["ideal"] = options.AspectRatio
+            };
+        }
+
+        if (options.FacingMode is not null)
+        {
+            constraints["facingMode"] = options.FacingMode;
+        }
+
+        if (options.ResizeMode is not null)
+        {
+            constraints["resizeMode"] = options.ResizeMode;
+        }
+
+        if (options.VideoDeviceId is not null)
+        {
+            constraints["deviceId"] = options.VideoDeviceId;
+        }
+
+        return constraints;
+    }
 }
