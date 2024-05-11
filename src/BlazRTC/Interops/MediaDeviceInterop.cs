@@ -3,12 +3,12 @@ using Microsoft.JSInterop;
 
 namespace BlazRTC.Interops;
 
-internal class MediaDeviceInterop : IMediaDeviceService, IDisposable
+internal class MediaDeviceInterop : IMediaDeviceService, IAsyncDisposable
 {
     private DotNetObjectReference<MediaDeviceInterop> _dotNetObjectReference;
     private EventHandler<MediaDeviceChangeEventArgs>? _onDeviceChange;
-    private readonly string? _localStreamElementId;
     private readonly IJSRuntime _jSRuntime;
+    private string? _localStreamElementId;
 
     public MediaDeviceInterop(IJSRuntime jSRuntime)
     {
@@ -17,7 +17,7 @@ internal class MediaDeviceInterop : IMediaDeviceService, IDisposable
     }
 
 
-    public event Action? OnVideoStreamAvailable;
+    public event Action<string>? OnVideoStreamAvailable;
 
     public event EventHandler<MediaDeviceChangeEventArgs> OnDeviceChange
     {
@@ -48,37 +48,33 @@ internal class MediaDeviceInterop : IMediaDeviceService, IDisposable
             return [];
         return mediaDevices;
     }
-    public async Task<bool> StartCameraAsync(MediaCaptureOptions options)
-    {
-        var succeeded = await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.getMediaStream", options);
-        if (succeeded)
-        {
-            // localStreamElementId = options.PreviewStreamIn;
-            NotifyVideoStreamAvailable();
-        }
 
-        return succeeded;
-    }
-
-
-    public async Task StartCaptureAsync(MediaCaptureOptions options)
+    public async Task StartMediaCaptureAsync(MediaCaptureOptions options)
     {
         var constraints = BuildMediaConstraints(options);
-        await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.getMediaStream", constraints, options.PreviewStreamIn);
+        await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.getMediaStream", constraints, options.PreviewStreamIn, _dotNetObjectReference);
+        _localStreamElementId = options.PreviewStreamIn;
     }
 
-    public void Dispose()
+    public async Task ToggleVideoTrackAsync()
     {
-        _dotNetObjectReference?.Dispose();
+        await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.toggleVideoTrack");
     }
 
-    public async Task StopCameraAsync()
+    public async Task ToggleAudioTrackAsync()
+    {
+        await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.toggleAudioTrack");
+    }
+
+
+    public async Task StopMediaCaptureAsync()
     {
         if (_localStreamElementId is null) return;
         await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.stopMediaStream", _localStreamElementId);
     }
 
-    private void NotifyVideoStreamAvailable() => OnVideoStreamAvailable?.Invoke();
+    [JSInvokable("RaiseOnMediaStreamAvailable")]
+    public void NotifyVideoStreamAvailable(string streamId) => OnVideoStreamAvailable?.Invoke(streamId);
 
 
     private static Dictionary<string, object> BuildMediaConstraints(MediaCaptureOptions options)
@@ -151,5 +147,16 @@ internal class MediaDeviceInterop : IMediaDeviceService, IDisposable
         }
 
         return constraints;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _dotNetObjectReference?.Dispose();
+        _localStreamElementId = null;
+        if (_onDeviceChange is not null)
+        {
+            _onDeviceChange = null;
+            await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.cancelDeviceChangeListener");
+        }
     }
 }

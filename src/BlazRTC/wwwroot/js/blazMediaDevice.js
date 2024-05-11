@@ -1,4 +1,9 @@
 ﻿class BlazMediaDevice {
+    constructor() {
+        this.mediaStream = null;
+        this.localStreamId = null;
+    }
+
     async ensureMediaPermissions() {
         const hasCameraPermission = await navigator.permissions.query({ name: 'camera' });
         const hasMicrophonePermission = await navigator.permissions.query({ name: 'microphone' });
@@ -7,6 +12,7 @@
             await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
         }
     }
+
     async getConnectedDevices() {
         await this.ensureMediaPermissions();
         const devices = await navigator.mediaDevices.enumerateDevices();
@@ -38,32 +44,19 @@
         navigator.mediaDevices.removeEventListener('devicechange');
     }
 
-    // async getMediaStream(options) {
-    //     console.info("options", options);
-    //     //build constraints object from the options for all the possible values
-    //     const constraints = {
-    //         video: {
-    //             frameRate: options.frameRate,
-    //             width: { min: 480, ideal: 720, max: 1280 },
-    //             aspectRatio: options.aspectRatio,
-    //         }, audio: true
-    //     };
-    //     const stream = await navigator.mediaDevices.getUserMedia(constraints);
-    //     if (stream && options.previewStreamIn) {
-    //         const videoElement = document.getElementById(options.previewStreamIn);
-    //         videoElement.srcObject = stream;
-    //         videoElement.muted = options.muted;
-    //     }
-    // }
-
-
-    async getMediaStream(constraints, previewStreamIn) {
+    async getMediaStream(constraints, previewStreamIn, dotNetReference) {
         navigator.mediaDevices.getUserMedia(constraints)
             .then(stream => {
-                if (stream && previewStreamIn) {
+                if (!stream) {
+                    console.error("No stream found");
+                    return;
+                }
+                this.mediaStream = stream;
+                if (previewStreamIn) {
+                    this.localStreamId = previewStreamIn;
                     this.showMediaStream(stream, previewStreamIn, true);
                 }
-                return stream;
+                dotNetReference.invokeMethodAsync('RaiseOnMediaStreamAvailable', stream.id);
             })
             .catch(err => {
                 console.error("Error occurred while accessing media devices", err);
@@ -85,9 +78,33 @@
             const stream = videoElement.srcObject;
             const tracks = stream.getTracks();
             tracks.forEach(track => track.stop());
+            videoElement.srcObject = null;
+            videoElement.removeAttribute("src");
         }
         //videoElement.removeAttribute("src");
         //videoElement.removeAttribute("srcObject");
+    }
+
+    toggleVideoTrack() {
+        if (!this.mediaStream) return;
+        this.mediaStream.getVideoTracks().forEach(track => {
+            track.enabled = !track.enabled;
+        });
+    }
+
+    toggleAudioTrack() {
+        if (!this.mediaStream) return;
+        this.mediaStream.getAudioTracks().forEach(track => {
+            track.enabled = !track.enabled;
+        });
+    }
+
+    dispose() {
+        if (this.mediaStream) {
+            this.mediaStream.getTracks().forEach(track => track.stop());
+            this.mediaStream = null;
+        }
+        this.localStreamId = null;
     }
 }
 
