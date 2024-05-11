@@ -1,4 +1,5 @@
 ﻿@page "/"
+@implements IAsyncDisposable
 
 @inject IMediaDeviceService MediaDeviceService
 
@@ -12,17 +13,30 @@
     <div>@device.Label : @device.Kind</div>
 }
 <button @onclick="StartMediaCapture">Start Capture</button>
+@if (localStreamId != null)
+{
+    <button @onclick="ToggleVideo">Toggle Video</button>
+    <button @onclick="StopMediaCaptureAsync">Stop Capture</button>
+}
 <video id="preview" autoplay muted></video>
 
 
 @code {
     List<MediaDeviceInfo> devices = new List<MediaDeviceInfo>();
+    string? localStreamId = null;
 
     protected override async Task OnInitializedAsync()
     {
         devices = (await MediaDeviceService.GetMediaDevicesAsync()).ToList();
+        MediaDeviceService.OnVideoStreamAvailable += OnStreamAvailable;
     }
 
+    private void OnStreamAvailable(string streamId)
+    {
+        this.localStreamId = streamId;
+        Console.WriteLine("Stream Available" + streamId);
+        StateHasChanged();
+    }
     private async Task StartMediaCapture()
     {
         var options = MediaCaptureOptions.Create()
@@ -30,7 +44,26 @@
         .WithVideoEnabled()
         .WithPreviewStream("preview");
 
-        await MediaDeviceService.StartCaptureAsync(options);
+        await MediaDeviceService.StartMediaCaptureAsync(options);
 
+    }
+
+    private async Task ToggleVideo()
+    {
+        if (localStreamId != null)
+            await MediaDeviceService.ToggleVideoTrackAsync();
+    }
+
+    private async Task StopMediaCaptureAsync()
+    {
+        await MediaDeviceService.StopMediaCaptureAsync();
+        localStreamId = null;
+        StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await StopMediaCaptureAsync();
+        MediaDeviceService.OnVideoStreamAvailable -= OnStreamAvailable;
     }
 }
