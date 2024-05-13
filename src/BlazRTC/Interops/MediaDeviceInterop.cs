@@ -1,4 +1,5 @@
-﻿using BlazRTC.Extensions;
+﻿using System.Text.Json;
+using BlazRTC.Extensions;
 using Microsoft.JSInterop;
 
 namespace BlazRTC.Interops;
@@ -43,10 +44,12 @@ internal class MediaDeviceInterop : IMediaDeviceService, IAsyncDisposable
 
     public async Task<IEnumerable<MediaDeviceInfo>> GetMediaDevicesAsync()
     {
-        var mediaDevices = await _jSRuntime.InvokeAsyncWithErrorHandling<MediaDeviceInfo[]>("blazMediaDevice.getConnectedDevices");
-        if (mediaDevices is null or { Length: 0 })
-            return [];
-        return mediaDevices;
+        var mediaDevices = await _jSRuntime.InvokeAsyncWithErrorHandling<object[]>("blazMediaDevice.getConnectedDevices");
+        var options = new JsonSerializerOptions();
+        options.Converters.Add(new MediaDeviceInfoConverter());
+        var devices = JsonSerializer.Deserialize<MediaDeviceInfo[]>(JsonSerializer.Serialize(mediaDevices), options);
+
+        return devices!;
     }
 
     public async Task StartMediaCaptureAsync(MediaCaptureOptions options)
