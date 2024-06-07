@@ -2,7 +2,7 @@
 
 namespace BlazRTC.Services;
 
-public interface IMediaDeviceService
+public interface IMediaDeviceService : IAsyncDisposable
 {
     /// <summary>
     /// Retrieves a collection of media devices asynchronously.
@@ -43,5 +43,5 @@ public interface IMediaDeviceService
     /// <summary>
     /// Occurs when a video stream is available.
     /// </summary>
-    event Action<string>? OnVideoStreamAvailable;
+    event EventHandler<VideoStreamEventArgs>? OnVideoStreamAvailable;
 }

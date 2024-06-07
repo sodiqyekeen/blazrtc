@@ -4,12 +4,17 @@ using Microsoft.JSInterop;
 
 namespace BlazRTC.Interops;
 
-internal class MediaDeviceInterop : IMediaDeviceService, IAsyncDisposable
+internal class MediaDeviceInterop : IMediaDeviceService
 {
-    private DotNetObjectReference<MediaDeviceInterop> _dotNetObjectReference;
+    private readonly DotNetObjectReference<MediaDeviceInterop> _dotNetObjectReference;
     private EventHandler<MediaDeviceChangeEventArgs>? _onDeviceChange;
     private readonly IJSRuntime _jSRuntime;
     private string? _localStreamElementId;
+
+    private static readonly JsonSerializerOptions mediaDeviceInfoSerialiserOptions = new()
+    {
+        Converters = { new MediaDeviceInfoConverter() }
+    };
 
     public MediaDeviceInterop(IJSRuntime jSRuntime)
     {
@@ -17,8 +22,8 @@ internal class MediaDeviceInterop : IMediaDeviceService, IAsyncDisposable
         _jSRuntime = jSRuntime;
     }
 
-
-    public event Action<string>? OnVideoStreamAvailable;
+    public event EventHandler<VideoStreamEventArgs>? OnVideoStreamAvailable;
+    // public event Action<string>? OnVideoStreamAvailable;
 
     public event EventHandler<MediaDeviceChangeEventArgs> OnDeviceChange
     {
@@ -45,9 +50,8 @@ internal class MediaDeviceInterop : IMediaDeviceService, IAsyncDisposable
     public async Task<IEnumerable<MediaDeviceInfo>> GetMediaDevicesAsync()
     {
         var mediaDevices = await _jSRuntime.InvokeAsyncWithErrorHandling<object[]>("blazMediaDevice.getConnectedDevices");
-        var options = new JsonSerializerOptions();
-        options.Converters.Add(new MediaDeviceInfoConverter());
-        var devices = JsonSerializer.Deserialize<MediaDeviceInfo[]>(JsonSerializer.Serialize(mediaDevices), options);
+        var devices = JsonSerializer.Deserialize<MediaDeviceInfo[]>(JsonSerializer.Serialize(mediaDevices),
+        mediaDeviceInfoSerialiserOptions);
 
         return devices!;
     }
@@ -76,8 +80,8 @@ internal class MediaDeviceInterop : IMediaDeviceService, IAsyncDisposable
         await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.stopMediaStream", _localStreamElementId);
     }
 
-    [JSInvokable("RaiseOnMediaStreamAvailable")]
-    public void NotifyVideoStreamAvailable(string streamId) => OnVideoStreamAvailable?.Invoke(streamId);
+    [JSInvokable]
+    public void RaiseOnMediaStreamAvailable(string streamId) => OnVideoStreamAvailable?.Invoke(this, new VideoStreamEventArgs(streamId));
 
 
     private static Dictionary<string, object> BuildMediaConstraints(MediaCaptureOptions options)
