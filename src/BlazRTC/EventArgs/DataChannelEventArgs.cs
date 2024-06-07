@@ -1,4 +1,4 @@
-﻿using BlazRTC.Models;
+﻿using BlazRTC;
 
 namespace BlazRTC;
 

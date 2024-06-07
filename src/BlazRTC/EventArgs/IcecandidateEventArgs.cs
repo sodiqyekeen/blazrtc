@@ -1,8 +1,8 @@
 ﻿namespace BlazRTC;
 
-public class IcecandidateEventArgs : EventArgs
+public class IceCandidateEventArgs : EventArgs
 {
-    public IcecandidateEventArgs(object candidate)
+    public IceCandidateEventArgs(object candidate)
     {
         Candidate = candidate;
     }
