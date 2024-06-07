@@ -31,12 +31,13 @@
         MediaDeviceService.OnVideoStreamAvailable += OnStreamAvailable;
     }
 
-    private void OnStreamAvailable(string streamId)
+    private void OnStreamAvailable(object? sender, VideoStreamEventArgs stream)
     {
-        this.localStreamId = streamId;
-        Console.WriteLine("Stream Available" + streamId);
+        this.localStreamId = stream.StreamId;
+        Console.WriteLine("Stream Available" + stream.StreamId);
         StateHasChanged();
     }
+
     private async Task StartMediaCapture()
     {
         var options = MediaCaptureOptions.Create()
@@ -45,7 +46,6 @@
         .WithPreviewStream("preview");
 
         await MediaDeviceService.StartMediaCaptureAsync(options);
-
     }
 
     private async Task ToggleVideo()
