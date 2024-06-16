@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+src/BlazRTC/wwwroot/blazrtc.bundle.js
+src/BlazRTC/wwwroot/blazrtc.bundle.js.LICENSE.txt

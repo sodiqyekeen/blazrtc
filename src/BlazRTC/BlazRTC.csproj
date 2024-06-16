@@ -21,4 +21,13 @@
     <Folder Include="Services\MediaDevice\" />
   </ItemGroup>
 
+  <Target Name="RunWebpack" AfterTargets="Build">
+    <Exec Command="npm run build" />
+  </Target>
+
+  <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
+    <Exec Command="npm install" />
+    <Exec Command="npm run build" />
+  </Target>
+
 </Project>
