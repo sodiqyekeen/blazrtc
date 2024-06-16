@@ -9,7 +9,8 @@ public static class DependencyInjection
     {
         services.AddSingleton<IBlazRTCInterop, BlazRTCInterop>();
         services.AddSingleton<IBlazRTCService, BlazRTCService>();
-        services.AddScoped<IMediaDeviceService, MediaDeviceInterop>();
+        services.AddScoped<IMediaDevice, MediaDeviceInterop>();
+        services.AddScoped<IRtcPeerConnection, RtcPeerConnectionInterop>();
         return services;
     }
 }

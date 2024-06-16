@@ -2,7 +2,7 @@
 
 namespace BlazRTC.Services;
 
-public interface IMediaDeviceService : IAsyncDisposable
+public interface IMediaDevice : IAsyncDisposable
 {
     /// <summary>
     /// Retrieves a collection of media devices asynchronously.
@@ -15,7 +15,7 @@ public interface IMediaDeviceService : IAsyncDisposable
     /// </summary>
     /// <param name="options">The options for media capture.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    Task StartMediaCaptureAsync(MediaCaptureOptions options);
+    Task<IMediaStream> StartMediaCaptureAsync(MediaCaptureOptions options);
 
     /// <summary>
     /// Toggles the video track on or off asynchronously.
@@ -41,7 +41,7 @@ public interface IMediaDeviceService : IAsyncDisposable
     event EventHandler<MediaDeviceChangeEventArgs> OnDeviceChange;
 
     /// <summary>
-    /// Occurs when a video stream is available.
+    /// Occurs when a media stream is available.
     /// </summary>
-    event EventHandler<VideoStreamEventArgs>? OnVideoStreamAvailable;
+    event EventHandler<MediaStreamEventArgs>? MediaStreamAvailable;
 }

@@ -4,17 +4,12 @@ using Microsoft.JSInterop;
 
 namespace BlazRTC.Interops;
 
-internal class MediaDeviceInterop : IMediaDeviceService
+internal class MediaDeviceInterop : IMediaDevice
 {
     private readonly DotNetObjectReference<MediaDeviceInterop> _dotNetObjectReference;
     private EventHandler<MediaDeviceChangeEventArgs>? _onDeviceChange;
     private readonly IJSRuntime _jSRuntime;
     private string? _localStreamElementId;
-
-    private static readonly JsonSerializerOptions mediaDeviceInfoSerialiserOptions = new()
-    {
-        Converters = { new MediaDeviceInfoConverter() }
-    };
 
     public MediaDeviceInterop(IJSRuntime jSRuntime)
     {
@@ -22,8 +17,7 @@ internal class MediaDeviceInterop : IMediaDeviceService
         _jSRuntime = jSRuntime;
     }
 
-    public event EventHandler<VideoStreamEventArgs>? OnVideoStreamAvailable;
-    // public event Action<string>? OnVideoStreamAvailable;
+    public event EventHandler<MediaStreamEventArgs>? MediaStreamAvailable;
 
     public event EventHandler<MediaDeviceChangeEventArgs> OnDeviceChange
     {
@@ -35,7 +29,7 @@ internal class MediaDeviceInterop : IMediaDeviceService
     {
         if (_onDeviceChange is null)
         {
-            await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.listenForDeviceChanges", _dotNetObjectReference);
+            await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazRTC.mediaDevices.listenForDeviceChanges", _dotNetObjectReference);
         }
         _onDeviceChange += eventHandler;
     }
@@ -44,45 +38,47 @@ internal class MediaDeviceInterop : IMediaDeviceService
     {
         _onDeviceChange -= eventHandler;
         if (_onDeviceChange is null)
-            await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.cancelDeviceChangeListener");
+            await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazRTC.mediaDevices.cancelDeviceChangeListener");
     }
 
     public async Task<IEnumerable<MediaDeviceInfo>> GetMediaDevicesAsync()
     {
-        var mediaDevices = await _jSRuntime.InvokeAsyncWithErrorHandling<object[]>("blazMediaDevice.getConnectedDevices");
-        var devices = JsonSerializer.Deserialize<MediaDeviceInfo[]>(JsonSerializer.Serialize(mediaDevices),
-        mediaDeviceInfoSerialiserOptions);
-
-        return devices!;
+        var mediaDevices = await _jSRuntime.InvokeAsyncWithErrorHandling<MediaDeviceInfo[]>("blazRTC.mediaDevices.getConnectedDevices");
+        return mediaDevices!;
     }
 
-    public async Task StartMediaCaptureAsync(MediaCaptureOptions options)
+    public async Task<IMediaStream> StartMediaCaptureAsync(MediaCaptureOptions options)
     {
         var constraints = BuildMediaConstraints(options);
-        await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.getMediaStream", constraints, options.PreviewStreamIn, _dotNetObjectReference);
+        var mediaStream = await _jSRuntime.InvokeAsyncWithErrorHandling<JsMediaStream>("blazRTC.mediaDevices.getUserMedia", constraints, options.PreviewStreamIn, _dotNetObjectReference);
         _localStreamElementId = options.PreviewStreamIn;
+        var stream = new MediaStreamInterop(_jSRuntime, mediaStream!);
+        OnMediaStreamAvailable(new MediaStreamEventArgs(stream));
+        return stream;
     }
 
     public async Task ToggleVideoTrackAsync()
     {
-        await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.toggleVideoTrack");
+        await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazRTC.mediaDevices.toggleVideoTrack");
     }
 
     public async Task ToggleAudioTrackAsync()
     {
-        await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.toggleAudioTrack");
+        await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazRTC.mediaDevices.toggleAudioTrack");
     }
 
 
     public async Task StopMediaCaptureAsync()
     {
         if (_localStreamElementId is null) return;
-        await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.stopMediaStream", _localStreamElementId);
+        await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazRTC.mediaDevices.stopMediaStream", _localStreamElementId);
     }
 
     [JSInvokable]
-    public void RaiseOnMediaStreamAvailable(string streamId) => OnVideoStreamAvailable?.Invoke(this, new VideoStreamEventArgs(streamId));
-
+    public void RaiseOnMediaStreamAvailable(object streamData)
+    {
+        Console.WriteLine($"Stream Data: {streamData.ToJson()}");
+    }
 
     private static Dictionary<string, object> BuildMediaConstraints(MediaCaptureOptions options)
     {
@@ -156,6 +152,11 @@ internal class MediaDeviceInterop : IMediaDeviceService
         return constraints;
     }
 
+    protected virtual void OnMediaStreamAvailable(MediaStreamEventArgs e)
+    {
+        MediaStreamAvailable?.Invoke(this, e);
+    }
+
     public async ValueTask DisposeAsync()
     {
         _dotNetObjectReference?.Dispose();
@@ -163,7 +164,7 @@ internal class MediaDeviceInterop : IMediaDeviceService
         if (_onDeviceChange is not null)
         {
             _onDeviceChange = null;
-            await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazMediaDevice.cancelDeviceChangeListener");
+            await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazRTC.mediaDevices.cancelDeviceChangeListener");
         }
     }
 }
