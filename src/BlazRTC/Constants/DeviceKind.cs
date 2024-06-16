@@ -1,4 +1,4 @@
-﻿namespace BlazRTC.Models;
+﻿namespace BlazRTC;
 
 public enum DeviceKind
 {
