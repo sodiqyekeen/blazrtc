@@ -2,22 +2,22 @@ import { BlazMediaStreamTrack } from './mediaStreamTrack.js';
 
 export class BlazMediaStream {
     constructor(stream) {
-        this.stream = stream;
+        this.source = stream;
         this.id = stream.id;
         this.tracks = [];
 
-        this.stream.getTracks().forEach(track => {
+        this.source.getTracks().forEach(track => {
             this.tracks.push(new BlazMediaStreamTrack(track));
         });
     }
 
     registerEventHandlers(dotNetReference) {
-        this.stream.onaddtrack = (event) => {
+        this.source.onaddtrack = (event) => {
             console.log("Track Added: ", event);
             dotNetReference.invokeMethodAsync('RaiseOnTrackAdded', event);
         };
 
-        this.stream.onremovetrack = (event) => {
+        this.source.onremovetrack = (event) => {
             console.log("Track Removed: ", event);
             dotNetReference.invokeMethodAsync('RaiseOnTrackRemoved', event);
         };

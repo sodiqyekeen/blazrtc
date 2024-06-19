@@ -1,9 +1,10 @@
 export class BlazRtcPeerConnection {
-    constructor(configuration, dotNetReference) {
+    constructor(configuration, dotNetReference, mediaStreams) {
         this.peerConnection = new RTCPeerConnection(configuration);
         this.dotNetReference = dotNetReference;
         this.localStreamId = null;
         this.remoteStreamId = null;
+        this.mediaStreams = mediaStreams;
 
         this.peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
@@ -17,7 +18,7 @@ export class BlazRtcPeerConnection {
             dotNetReference.invokeMethodAsync('RaiseOnIceConnectionStateChange', this.peerConnection.iceConnectionState);
         };
 
-        this.peerConnection.onnegotiationneeded = this.createOffer;
+        // this.peerConnection.onnegotiationneeded = this.createOffer;
 
         this.peerConnection.ontrack = (event) => {
             console.log("Track: ", event);
@@ -31,10 +32,18 @@ export class BlazRtcPeerConnection {
         };
     }
 
-    async createOffer() {
+    async createOffer(localStreamId) {
+        if (!this.peerConnection) {
+            console.debug("Peer Connection is not available");
+            return;
+        }
+        if (localStreamId) {
+            this.addstream(localStreamId);
+        }
         const offer = await this.peerConnection.createOffer();
         await this.peerConnection.setLocalDescription(offer);
-        this.dotNetReference.invokeMethodAsync('RaiseOnOfferAvailable', offer);
+        console.log("Offer: ", offer);
+        return offer;
     }
 
     async createAnswer(offer) {
@@ -55,7 +64,7 @@ export class BlazRtcPeerConnection {
     }
 
     getStreamById(streamId) {
-        return document.getElementById(streamId);
+        return this.mediaStreams.getStream(streamId).source;
     }
 
     addstream(streamId) {

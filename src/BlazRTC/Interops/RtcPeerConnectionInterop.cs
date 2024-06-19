@@ -23,7 +23,7 @@ internal class RtcPeerConnectionInterop : IRtcPeerConnection
 
     public async Task InitailiseAsync(object configuration)
     {
-        var suceeded = await _jSRuntime.InvokeAsyncWithErrorHandling<bool>("blazRTC.initialisePeerConnection", configuration, _dotNetObjectReference);
+        var suceeded = await _jSRuntime.InvokeVoidWithErrorHandlingAsync("blazRTC.initialisePeerConnection", configuration, _dotNetObjectReference);
         if (!suceeded)
         {
             throw new InvalidOperationException("Failed to initialise peer connection");
@@ -32,17 +32,19 @@ internal class RtcPeerConnectionInterop : IRtcPeerConnection
 
     public async Task AddIceCandidateAsync(object iceCandidate)
     {
-        await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazRTC.PeerConnection.addIceCandidate", iceCandidate);
+        await _jSRuntime.InvokeVoidWithErrorHandlingAsync("blazRTC.peerConnection.addIceCandidate", iceCandidate);
     }
 
-    public async Task CreateOfferAsync()
+    public async Task<RtcSessionDescription> CreateOfferAsync(string? localStreamId = null)
     {
-        await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazRTC.PeerConnection.createOffer");
+        var offer = await _jSRuntime.InvokeWithErrorHandlingAsync<RtcSessionDescription>("blazRTC.peerConnection.createOffer", localStreamId);
+        Console.WriteLine("Offer created " + offer.ToJson());
+        return offer;
     }
 
     public async Task CreateAnswerAsync(object offer)
     {
-        await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazRTC.PeerConnection.createAnswer", offer);
+        await _jSRuntime.InvokeVoidWithErrorHandlingAsync("blazRTC.peerConnection.createAnswer", offer);
     }
 
 
@@ -118,6 +120,6 @@ internal class RtcPeerConnectionInterop : IRtcPeerConnection
 
     public async ValueTask DisposeAsync()
     {
-        await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazRtcPeerConnection.dispose", _dotNetObjectReference);
+        await _jSRuntime.InvokeVoidWithErrorHandlingAsync("blazRTC.peerConnection.dispose", _dotNetObjectReference);
     }
 }

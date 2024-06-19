@@ -10,6 +10,6 @@ public interface IMediaStream
 
     Task AddTrackAsync(IMediaStreamTrack track);
     Task RemoveTrackAsync(IMediaStreamTrack track);
-    MediaStreamTrack GetTrackById(string trackId);
+    IMediaStreamTrack? GetTrackById(string trackId);
 
 }

@@ -27,9 +27,9 @@ internal class MediaStreamInterop : IMediaStream
         OnTrackAdded(new MediaStreamTrackEventArgs(track));
     }
 
-    public MediaStreamTrack GetTrackById(string trackId)
+    public IMediaStreamTrack? GetTrackById(string trackId)
     {
-        throw new NotImplementedException();
+        return _tracks.FirstOrDefault(track => track.Id == trackId);
     }
 
     public async Task RemoveTrackAsync(IMediaStreamTrack track)

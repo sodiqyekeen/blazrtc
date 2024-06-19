@@ -4,7 +4,7 @@ import { BlazRtcPeerConnection } from "./peerConnection";
 class BlazRTC {
     constructor() {
         this.mediaDevices = new BlazMediaDevice();
-        this.peerConnection = {};
+        this.peerConnection = null;
         this.mediaStreams = {
             streams: [],
 
@@ -66,7 +66,7 @@ class BlazRTC {
     }
 
     initialisePeerConnection(configuration, dotNetReference) {
-        this.peerConnection = new BlazRtcPeerConnection(configuration, dotNetReference);
+        this.peerConnection = new BlazRtcPeerConnection(configuration, dotNetReference, this.mediaStreams);
     }
 }
 

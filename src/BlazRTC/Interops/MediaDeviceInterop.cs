@@ -29,7 +29,7 @@ internal class MediaDeviceInterop : IMediaDevice
     {
         if (_onDeviceChange is null)
         {
-            await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazRTC.mediaDevices.listenForDeviceChanges", _dotNetObjectReference);
+            await _jSRuntime.InvokeVoidWithErrorHandlingAsync("blazRTC.mediaDevices.listenForDeviceChanges", _dotNetObjectReference);
         }
         _onDeviceChange += eventHandler;
     }
@@ -38,19 +38,19 @@ internal class MediaDeviceInterop : IMediaDevice
     {
         _onDeviceChange -= eventHandler;
         if (_onDeviceChange is null)
-            await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazRTC.mediaDevices.cancelDeviceChangeListener");
+            await _jSRuntime.InvokeVoidWithErrorHandlingAsync("blazRTC.mediaDevices.cancelDeviceChangeListener");
     }
 
     public async Task<IEnumerable<MediaDeviceInfo>> GetMediaDevicesAsync()
     {
-        var mediaDevices = await _jSRuntime.InvokeAsyncWithErrorHandling<MediaDeviceInfo[]>("blazRTC.mediaDevices.getConnectedDevices");
+        var mediaDevices = await _jSRuntime.InvokeWithErrorHandlingAsync<MediaDeviceInfo[]>("blazRTC.mediaDevices.getConnectedDevices");
         return mediaDevices!;
     }
 
     public async Task<IMediaStream> StartMediaCaptureAsync(MediaCaptureOptions options)
     {
         var constraints = BuildMediaConstraints(options);
-        var mediaStream = await _jSRuntime.InvokeAsyncWithErrorHandling<JsMediaStream>("blazRTC.mediaDevices.getUserMedia", constraints, options.PreviewStreamIn, _dotNetObjectReference);
+        var mediaStream = await _jSRuntime.InvokeWithErrorHandlingAsync<JsMediaStream>("blazRTC.mediaDevices.getUserMedia", constraints, options.PreviewStreamIn, _dotNetObjectReference);
         _localStreamElementId = options.PreviewStreamIn;
         var stream = new MediaStreamInterop(_jSRuntime, mediaStream!);
         OnMediaStreamAvailable(new MediaStreamEventArgs(stream));
@@ -59,19 +59,19 @@ internal class MediaDeviceInterop : IMediaDevice
 
     public async Task ToggleVideoTrackAsync()
     {
-        await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazRTC.mediaDevices.toggleVideoTrack");
+        await _jSRuntime.InvokeVoidWithErrorHandlingAsync("blazRTC.mediaDevices.toggleVideoTrack");
     }
 
     public async Task ToggleAudioTrackAsync()
     {
-        await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazRTC.mediaDevices.toggleAudioTrack");
+        await _jSRuntime.InvokeVoidWithErrorHandlingAsync("blazRTC.mediaDevices.toggleAudioTrack");
     }
 
 
     public async Task StopMediaCaptureAsync()
     {
         if (_localStreamElementId is null) return;
-        await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazRTC.mediaDevices.stopMediaStream", _localStreamElementId);
+        await _jSRuntime.InvokeVoidWithErrorHandlingAsync("blazRTC.mediaDevices.stopMediaStream", _localStreamElementId);
     }
 
     [JSInvokable]
@@ -164,7 +164,7 @@ internal class MediaDeviceInterop : IMediaDevice
         if (_onDeviceChange is not null)
         {
             _onDeviceChange = null;
-            await _jSRuntime.InvokeVoidAsyncWithErrorHandling("blazRTC.mediaDevices.cancelDeviceChangeListener");
+            await _jSRuntime.InvokeVoidWithErrorHandlingAsync("blazRTC.mediaDevices.cancelDeviceChangeListener");
         }
     }
 }

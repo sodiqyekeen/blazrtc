@@ -5,7 +5,7 @@ namespace BlazRTC.Extensions;
 
 internal static class IJSRuntimeExtensions
 {
-    public static async ValueTask<bool> InvokeVoidAsyncWithErrorHandling(this IJSRuntime jsRuntime, string identifier, params object?[] args)
+    public static async ValueTask<bool> InvokeVoidWithErrorHandlingAsync(this IJSRuntime jsRuntime, string identifier, params object?[] args)
     {
         try
         {
@@ -21,7 +21,7 @@ internal static class IJSRuntimeExtensions
         }
     }
 
-    public static async ValueTask<T?> InvokeAsyncWithErrorHandling<T>(this IJSRuntime jsRuntime, string identifier, params object?[] args)
+    public static async ValueTask<T?> InvokeWithErrorHandlingAsync<T>(this IJSRuntime jsRuntime, string identifier, params object?[] args)
     {
         try
         {
