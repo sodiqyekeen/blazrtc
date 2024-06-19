@@ -1,7 +1,8 @@
 ﻿@page "/"
 @implements IAsyncDisposable
 
-@inject IMediaDeviceService MediaDeviceService
+@inject IMediaDevice MediaDeviceService
+@inject IRtcPeerConnection PeerConnection;
 
 <PageTitle>Index</PageTitle>
 
@@ -13,12 +14,14 @@
     <div>@device.Label : @device.Kind</div>
 }
 <button @onclick="StartMediaCapture">Start Capture</button>
+
 @if (localStreamId != null)
 {
     <button @onclick="ToggleVideo">Toggle Video</button>
     <button @onclick="StopMediaCaptureAsync">Stop Capture</button>
 }
 <video id="preview" autoplay muted></video>
+
 
 
 @code {
@@ -28,13 +31,16 @@
     protected override async Task OnInitializedAsync()
     {
         devices = (await MediaDeviceService.GetMediaDevicesAsync()).ToList();
-        MediaDeviceService.OnVideoStreamAvailable += OnStreamAvailable;
+        MediaDeviceService.MediaStreamAvailable += OnStreamAvailable;
     }
 
-    private void OnStreamAvailable(object? sender, VideoStreamEventArgs stream)
+    private async Task StartCall()
     {
-        this.localStreamId = stream.StreamId;
-        Console.WriteLine("Stream Available" + stream.StreamId);
+    }
+
+    private void OnStreamAvailable(object? sender, MediaStreamEventArgs streamEvent)
+    {
+        this.localStreamId = streamEvent.Stream.Id;
         StateHasChanged();
     }
 
@@ -45,7 +51,10 @@
         .WithVideoEnabled()
         .WithPreviewStream("preview");
 
-        await MediaDeviceService.StartMediaCaptureAsync(options);
+        var mediaStream = await MediaDeviceService.StartMediaCaptureAsync(options);
+        Console.WriteLine("Stream Started " + mediaStream.Id);
+        await PeerConnection.InitailiseAsync(new {});
+        var offer =   await PeerConnection.CreateOfferAsync(mediaStream.Id);
     }
 
     private async Task ToggleVideo()
@@ -64,6 +73,6 @@
     public async ValueTask DisposeAsync()
     {
         await StopMediaCaptureAsync();
-        MediaDeviceService.OnVideoStreamAvailable -= OnStreamAvailable;
+        MediaDeviceService.MediaStreamAvailable -= OnStreamAvailable;
     }
 }
