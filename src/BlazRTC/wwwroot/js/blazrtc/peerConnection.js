@@ -54,7 +54,7 @@ export class BlazRtcPeerConnection {
         await this.peerConnection.setRemoteDescription(offer);
         const answer = await this.peerConnection.createAnswer();
         await this.peerConnection.setLocalDescription(answer);
-        this.dotNetReference.invokeMethodAsync('RaiseOnAnswerAvailable', answer);
+        return answer;
     }
 
     async addIceCandidate(candidate) {

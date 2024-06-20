@@ -39,12 +39,13 @@ internal class RtcPeerConnectionInterop : IRtcPeerConnection
     {
         var offer = await _jSRuntime.InvokeWithErrorHandlingAsync<RtcSessionDescription>("blazRTC.peerConnection.createOffer", localStreamId);
         Console.WriteLine("Offer created " + offer.ToJson());
-        return offer;
+        return offer!;
     }
 
-    public async Task CreateAnswerAsync(object offer)
+    public async Task<RtcSessionDescription> CreateAnswerAsync(RtcSessionDescription offer)
     {
-        await _jSRuntime.InvokeVoidWithErrorHandlingAsync("blazRTC.peerConnection.createAnswer", offer);
+        var answer = await _jSRuntime.InvokeWithErrorHandlingAsync<RtcSessionDescription>("blazRTC.peerConnection.createAnswer", offer);
+        return answer!;
     }
 
 
@@ -53,13 +54,6 @@ internal class RtcPeerConnectionInterop : IRtcPeerConnection
     {
         IceCandidateAvailable?.Invoke(this, new IceCandidateEventArgs(iceCandidate));
     }
-
-    [JSInvokable]
-    public void RaiseOnOfferAvailable(object offer)
-    {
-        OfferAvailable?.Invoke(this, new OfferEventArgs(offer));
-    }
-
 
     [JSInvokable]
     public void RaiseOnIceConnectionStateChange(object iceConnectionState)
@@ -77,12 +71,6 @@ internal class RtcPeerConnectionInterop : IRtcPeerConnection
     public void RaiseOnConnectionStateChange(string connectionState)
     {
         PeerConnectionStateChange?.Invoke(this, new PeerConnectionStateChangeEventArgs(connectionState));
-    }
-
-    [JSInvokable]
-    public void RaiseOnAnswerAvailable(object answer)
-    {
-        AnswerAvailable?.Invoke(this, new AnswerEventArgs(answer));
     }
 
     protected virtual void OnIceCandidateAvailable(IceCandidateEventArgs e)

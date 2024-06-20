@@ -25,7 +25,7 @@ public interface IRtcPeerConnection : IAsyncDisposable
     //addTrack()
     //addTransceiver()
     //close()
-    Task CreateAnswerAsync(object offer);
+    Task<RtcSessionDescription> CreateAnswerAsync(RtcSessionDescription offer);
     //createDataChannel()
     Task<RtcSessionDescription> CreateOfferAsync(string? localStreamId = null);
     //getConfiguration()

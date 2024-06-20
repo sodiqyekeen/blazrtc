@@ -1,8 +1,8 @@
 ﻿@page "/"
 @implements IAsyncDisposable
+@using Microsoft.AspNetCore.SignalR.Client
 
-@inject IMediaDevice MediaDeviceService
-@inject IRtcPeerConnection PeerConnection;
+
 
 <PageTitle>Index</PageTitle>
 
@@ -14,65 +14,13 @@
     <div>@device.Label : @device.Kind</div>
 }
 <button @onclick="StartMediaCapture">Start Capture</button>
-
+@* 
 @if (localStreamId != null)
 {
     <button @onclick="ToggleVideo">Toggle Video</button>
     <button @onclick="StopMediaCaptureAsync">Stop Capture</button>
-}
+} *@
 <video id="preview" autoplay muted></video>
 
 
 
-@code {
-    List<MediaDeviceInfo> devices = new List<MediaDeviceInfo>();
-    string? localStreamId = null;
-
-    protected override async Task OnInitializedAsync()
-    {
-        devices = (await MediaDeviceService.GetMediaDevicesAsync()).ToList();
-        MediaDeviceService.MediaStreamAvailable += OnStreamAvailable;
-    }
-
-    private async Task StartCall()
-    {
-    }
-
-    private void OnStreamAvailable(object? sender, MediaStreamEventArgs streamEvent)
-    {
-        this.localStreamId = streamEvent.Stream.Id;
-        StateHasChanged();
-    }
-
-    private async Task StartMediaCapture()
-    {
-        var options = MediaCaptureOptions.Create()
-        .WithAudioEnabled()
-        .WithVideoEnabled()
-        .WithPreviewStream("preview");
-
-        var mediaStream = await MediaDeviceService.StartMediaCaptureAsync(options);
-        Console.WriteLine("Stream Started " + mediaStream.Id);
-        await PeerConnection.InitailiseAsync(new {});
-        var offer =   await PeerConnection.CreateOfferAsync(mediaStream.Id);
-    }
-
-    private async Task ToggleVideo()
-    {
-        if (localStreamId != null)
-            await MediaDeviceService.ToggleVideoTrackAsync();
-    }
-
-    private async Task StopMediaCaptureAsync()
-    {
-        await MediaDeviceService.StopMediaCaptureAsync();
-        localStreamId = null;
-        StateHasChanged();
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await StopMediaCaptureAsync();
-        MediaDeviceService.MediaStreamAvailable -= OnStreamAvailable;
-    }
-}
