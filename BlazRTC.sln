@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazRTC", "src\BlazRTC\BlazRTC.csproj", "{A97FBC9F-463D-4F2F-BCAB-87D03CD4FE81}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazRTC", "src\BlazRTC\BlazRTC.csproj", "{A97FBC9F-463D-4F2F-BCAB-87D03CD4FE81}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazRTC.Sample.Pwa", "samples\BlazRTC.Sample.Pwa\BlazRTC.Sample.Pwa.csproj", "{1E2214E9-86E8-4946-9C3E-59760617431B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazRTC.Sample.Pwa", "samples\BlazRTC.Sample.Pwa\BlazRTC.Sample.Pwa.csproj", "{1E2214E9-86E8-4946-9C3E-59760617431B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazRTC.Sample.Api", "samples\BlazRTC.Sample.Api\BlazRTC.Sample.Api.csproj", "{AD220A4F-1FD2-4568-9AB6-614B2F8070DD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{1E2214E9-86E8-4946-9C3E-59760617431B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E2214E9-86E8-4946-9C3E-59760617431B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E2214E9-86E8-4946-9C3E-59760617431B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD220A4F-1FD2-4568-9AB6-614B2F8070DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD220A4F-1FD2-4568-9AB6-614B2F8070DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD220A4F-1FD2-4568-9AB6-614B2F8070DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD220A4F-1FD2-4568-9AB6-614B2F8070DD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
